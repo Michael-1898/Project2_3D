@@ -26,6 +26,7 @@ public class Shoot : MonoBehaviour
     private void OnFire() {
         // Create a ray from the camera to the mouse position
         Ray ray = mainCamera.ScreenPointToRay(mouse.position.ReadValue());
+        print("shoot");
 
         // Create a RaycastHit variable to store information about what was hit by the ray
         RaycastHit hit;
@@ -34,6 +35,7 @@ public class Shoot : MonoBehaviour
         if (Physics.Raycast(ray, out hit, Mathf.Infinity, enemyLayerMask))
         {
             Destroy(hit.collider.gameObject);
+            print("hit");
         }
     }
 }
