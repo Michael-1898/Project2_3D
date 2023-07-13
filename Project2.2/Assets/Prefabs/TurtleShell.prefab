@@ -347,8 +347,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerPosition: {fileID: 0}
   agent: {fileID: 7901791093310864073}
-  knockbackSpeed: 0
-  knockbackDuration: 0
+  knockbackSpeed: 7
+  knockbackDuration: 0.3
 --- !u!136 &7901791093310864071
 CapsuleCollider:
   m_ObjectHideFlags: 0
