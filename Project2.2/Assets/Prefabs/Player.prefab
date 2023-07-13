@@ -1293,7 +1293,7 @@ MonoBehaviour:
   groundCheckRadius: 0.1
   mouseSensitivity: 45
   mouseYMax: 45
-  mouseYMin: 15
+  mouseYMin: 2
   regularSpeed: 10
   sprintSpeed: 20
   gravity: -9.81

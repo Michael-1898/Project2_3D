@@ -20,10 +20,29 @@ public class Shoot : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        if(Input.GetMouseButtonDown(0)) {
+            PewPew();
+        }
     }
 
     private void OnFire() {
+        // Create a ray from the camera to the mouse position
+        Ray ray = mainCamera.ScreenPointToRay(mouse.position.ReadValue());
+        print("shoot");
+
+        // Create a RaycastHit variable to store information about what was hit by the ray
+        RaycastHit hit;
+
+        // If the ray hit something
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity, enemyLayerMask))
+        {
+            Destroy(hit.collider.gameObject);
+            print("hit");
+        }
+    }
+
+    private void PewPew()
+    {
         // Create a ray from the camera to the mouse position
         Ray ray = mainCamera.ScreenPointToRay(mouse.position.ReadValue());
         print("shoot");
