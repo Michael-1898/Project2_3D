@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 public class TPM_CharacterController : MonoBehaviour {
     [Header("Ground Check")]
@@ -20,17 +21,12 @@ public class TPM_CharacterController : MonoBehaviour {
     [Header("Player Movement")]
     private float yAxisVelocity;
     [SerializeField] private float mouseSensitivity, mouseYMax, mouseYMin;
-    [SerializeField] private float moveSpeed;
+    [SerializeField] private float regularSpeed, sprintSpeed;
     [SerializeField] private float gravity = -9.8f;
-    [SerializeField] private float gravityMultiplier;
+    private float moveSpeed;
 
     [Header("Jump")]
     [SerializeField] private float jumpForce;
-
-    [Header("Knockback")]
-    private float knockbackTimer;
-    private bool isKnockbackApplied;
-
 
     [Header("Misc")]
     private Mouse mouse;
@@ -48,6 +44,8 @@ public class TPM_CharacterController : MonoBehaviour {
         anim = GetComponent<Animator>();
 
         Cursor.lockState = CursorLockMode.Locked;
+
+        moveSpeed = regularSpeed;
     }
 
     // Update is called once per frame
@@ -55,17 +53,9 @@ public class TPM_CharacterController : MonoBehaviour {
     {
         GroundCheck();
 
-        yAxisVelocity += gravity * gravityMultiplier * Time.deltaTime;
+        yAxisVelocity += gravity * Time.deltaTime;
 
-        if(!isKnockbackApplied) {
-            moveVelocity = transform.TransformDirection(moveRawInput) * moveSpeed;
-        } else {
-            knockbackTimer -= Time.deltaTime;
-            if(knockbackTimer <= 0) {
-                isKnockbackApplied = false;
-            }
-        }
-
+        moveVelocity = transform.TransformDirection(moveRawInput) * moveSpeed;
         moveVelocity += new Vector3(0, yAxisVelocity, 0);
         characterController.Move(moveVelocity * Time.deltaTime);
         CursorCheck();
@@ -77,9 +67,9 @@ public class TPM_CharacterController : MonoBehaviour {
         }
     }
 
-    public void OnLook(InputValue value)
+    public void LookEvent(InputAction.CallbackContext value)
     {
-        mouseRawInput = value.Get<Vector2>();
+        mouseRawInput = value.ReadValue<Vector2>();
 
         xRotation -= mouseRawInput.y * mouseSensitivity * Time.deltaTime;
         yRotation += mouseRawInput.x * mouseSensitivity * Time.deltaTime;
@@ -90,9 +80,9 @@ public class TPM_CharacterController : MonoBehaviour {
         transform.localRotation = Quaternion.Euler(0, yRotation, 0);
     }
 
-    private void OnMove(InputValue value)
+    public void MoveEvent(InputAction.CallbackContext value)
     {
-        moveRawInput = new Vector3(value.Get<Vector2>().x, 0, value.Get<Vector2>().y);
+        moveRawInput = new Vector3(value.ReadValue<Vector2>().x, 0, value.ReadValue<Vector2>().y);
 
         anim.SetBool("WalkFront", moveRawInput.z > 0);
         anim.SetBool("WalkBack", moveRawInput.z < 0);
@@ -100,11 +90,27 @@ public class TPM_CharacterController : MonoBehaviour {
         anim.SetBool("WalkRight", moveRawInput.x > 0);
     }
 
-    private void OnJump()
+    public void JumpEvent()
     {
-        if(isGrounded && !isKnockbackApplied) {
+        if (isGrounded) {
             yAxisVelocity = jumpForce;
             anim.SetTrigger("Jump");
+        }
+    }
+
+    public void SprintEvent(InputAction.CallbackContext value)
+    {
+        if (value.started) {
+            moveSpeed = sprintSpeed;
+        } else if (value.canceled) {
+            moveSpeed = regularSpeed;
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Axe") || other.CompareTag("Turtle") || other.CompareTag("DeathZone")) {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
     }
 
@@ -113,10 +119,10 @@ public class TPM_CharacterController : MonoBehaviour {
         isGrounded = Physics.CheckSphere(groundCheck.transform.position, groundCheckRadius, groundMask);
     }
 
-    public void TakeKnockback(Vector3 knockbackDirection, float knockbackSpeed, float knockbackDuration)
-    {
-        moveVelocity = knockbackDirection * knockbackSpeed;
-        knockbackTimer = knockbackDuration;
-        isKnockbackApplied = true;
-    }
+    // public void TakeKnockback(Vector3 knockbackDirection, float knockbackSpeed, float knockbackDuration)
+    // {
+    //     moveVelocity = knockbackDirection * knockbackSpeed;
+    //     knockbackTimer = knockbackDuration;
+    //     isKnockbackApplied = true;
+    // }
 }
